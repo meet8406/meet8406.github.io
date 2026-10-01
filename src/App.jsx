@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, MotionConfig, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
 import {
   ArrowDown, ArrowDownRight, ArrowRight, ArrowUpRight, Braces, Check, ChevronRight,
@@ -8,23 +8,14 @@ import {
 import { capabilities, learning, milestones, profile, projects, technologies } from './data/portfolio.js';
 
 const navItems = [
-  ['about', 'Profile'], ['experience', 'Journey'], ['projects', 'Systems'],
-  ['stack', 'Stack'], ['lab', 'Lab'], ['contact', 'Connect'],
+  ['home', 'Home'], ['systems', 'Systems'], ['work', 'Work'], ['lab', 'Lab'], ['contact', 'Contact'],
 ];
-const stateFor = { home: 'INITIALIZE', about: 'IDENTITY', experience: 'EVOLUTION', projects: 'SYSTEMS', stack: 'TOOLCHAIN', lab: 'RESEARCH', code: 'SOURCE', contact: 'CONNECTION' };
+const stateFor = { home: 'INITIALIZE', systems: 'ENGINEERING', work: 'SYSTEMS', lab: 'RESEARCH', contact: 'CONNECTION' };
 const reveal = { hidden: { opacity: 0, y: 22 }, visible: { opacity: 1, y: 0, transition: { duration: 0.65, ease: [0.2, 0.7, 0.2, 1] } } };
 
-function useActiveSection() {
-  const [active, setActive] = useState('home');
-  useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-      if (visible) setActive(visible.target.id);
-    }, { rootMargin: '-24% 0px -55% 0px', threshold: [0, 0.1, 0.3, 0.6] });
-    document.querySelectorAll('main section[id]').forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
-  }, []);
-  return active;
+function currentPage() {
+  const segment = window.location.pathname.split('/').filter(Boolean)[0] || 'home';
+  return navItems.some(([id]) => id === segment) ? segment : 'home';
 }
 
 function Cursor() {
@@ -43,14 +34,48 @@ function Cursor() {
   return <motion.div className={`cursor-dot ${engaged ? 'is-engaged' : ''}`} animate={{ x: point.x, y: point.y, scale: engaged ? 1.45 : 1 }} transition={{ type: 'spring', stiffness: 500, damping: 36 }} aria-hidden="true" />;
 }
 
+function SignalField() {
+  const field = useRef(null);
+  const reduce = useReducedMotion();
+  useEffect(() => {
+    if (reduce || !window.matchMedia('(pointer: fine)').matches) return undefined;
+    let frame = 0;
+    const move = (event) => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const x = ((event.clientX / window.innerWidth) - 0.5) * 18;
+        const y = ((event.clientY / window.innerHeight) - 0.5) * 12;
+        field.current?.style.setProperty('--field-drift', `${x.toFixed(1)}px ${y.toFixed(1)}px`);
+      });
+    };
+    window.addEventListener('pointermove', move, { passive: true });
+    return () => { cancelAnimationFrame(frame); window.removeEventListener('pointermove', move); };
+  }, [reduce]);
+  return <div className="signal-field" ref={field} aria-hidden="true">
+    <svg viewBox="0 0 1440 1000" preserveAspectRatio="xMidYMid slice">
+      <g className="signal-map">
+        <path className="signal-route route-a" d="M110 714H306l112-112h126l86-86h140l96-96h178l110-110h178" />
+        <path className="signal-route route-b" d="M338 0v186l132 132v126l108 108v156l164 164v128" />
+        <path className="signal-route route-c" d="M1440 446h-168l-90 90h-142l-86 86H816l-92 92H570" />
+        <path className="signal-flow" d="M110 714H306l112-112h126l86-86h140l96-96h178l110-110h178" />
+        <circle className="signal-node" cx="306" cy="714" r="4" /><circle className="signal-node" cx="544" cy="602" r="4" />
+        <circle className="signal-node node-bright" cx="770" cy="516" r="5" /><circle className="signal-node" cx="948" cy="420" r="4" />
+        <circle className="signal-node" cx="338" cy="318" r="4" /><circle className="signal-node" cx="578" cy="552" r="4" />
+        <circle className="signal-ring" cx="770" cy="516" r="30" /><circle className="signal-ring ring-wide" cx="770" cy="516" r="48" />
+      </g>
+    </svg>
+    <span className="field-stamp">FIELD 07 <i /> SIGNAL ROUTING</span>
+  </div>;
+}
+
 function SideNav({ active }) {
   const [open, setOpen] = useState(false);
   return <>
-    <header className="mobile-header"><a href="#home" className="wordmark">MS<span>↗</span></a><button className="menu-toggle" onClick={() => setOpen(!open)} aria-label={open ? 'Close navigation' : 'Open navigation'} aria-expanded={open}>{open ? <X /> : <Menu />}</button></header>
+    <header className="mobile-header"><a href="/" className="wordmark">MS<span>↗</span></a><button className="menu-toggle" onClick={() => setOpen(!open)} aria-label={open ? 'Close navigation' : 'Open navigation'} aria-expanded={open}>{open ? <X /> : <Menu />}</button></header>
     <aside className={`side-nav ${open ? 'nav-open' : ''}`} aria-label="Main navigation">
-      <a href="#home" className="wordmark" aria-label="Meet Shah home">MS<span>↗</span></a>
+      <a href="/" className="wordmark" aria-label="Meet Shah home">MS<span>↗</span></a>
       <div className="nav-label">WORKSPACE</div>
-      <nav>{navItems.map(([id, label], index) => <a key={id} href={`#${id}`} onClick={() => setOpen(false)} className={active === id ? 'nav-active' : ''} aria-current={active === id ? 'location' : undefined}><span className="nav-index">0{index + 1}</span><span>{label}</span><span className="nav-pip" /></a>)}</nav>
+      <nav>{navItems.map(([id, label], index) => <a key={id} href={id === 'home' ? '/' : `/${id}/`} onClick={() => setOpen(false)} className={active === id ? 'nav-active' : ''} aria-current={active === id ? 'page' : undefined}><span className="nav-index">0{index + 1}</span><span>{label}</span><span className="nav-pip" /></a>)}</nav>
       <div className="nav-spacer" />
       <div className="availability"><span className="live-dot" /><span>OPEN TO<br />OPPORTUNITIES</span></div>
       <a className="side-github" href={profile.github} target="_blank" rel="noreferrer"><Github size={15} /> <span>GITHUB</span><ArrowUpRight size={13} /></a>
@@ -92,8 +117,8 @@ function Hero({ ready }) {
         <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.22 }}>Meet Shah<span className="title-period">.</span></motion.h1>
         <motion.p className="hero-statement" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38, duration: 0.65 }}>Building production systems<br className="desktop-break" /> from <span>API to cloud.</span></motion.p>
         <motion.div className="hero-actions" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.62 }}>
-          <a className="button-primary" href="#projects">EXPLORE THE WORK <ArrowDownRight size={16} /></a>
-          <a className="button-quiet" href="#contact">LET'S CONNECT <ArrowRight size={14} /></a>
+          <a className="button-primary" href="/work/">EXPLORE THE WORK <ArrowDownRight size={16} /></a>
+          <a className="button-quiet" href="/contact/">LET'S CONNECT <ArrowRight size={14} /></a>
         </motion.div>
       </div>
       <motion.div className="boot-window" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35, duration: 0.6 }}>
@@ -123,7 +148,7 @@ function ProfileSection() {
 function JourneySection() {
   return <section className="section-frame content-section journey-section" id="experience">
     <SectionHeading index="02" label="ENGINEERING JOURNEY" title={<>From feature work<br /><span>to full systems.</span></>} note="Technman Consulting / Software Developer" />
-    <div className="journey-layout"><div className="journey-intro"><span className="date-stamp">DEC 2024 — NOW</span><p>Growing through the details that make production software work: business rules, system boundaries, and dependable delivery.</p><a href="#projects">SEE SYSTEMS BUILT <ArrowRight size={14} /></a></div>
+    <div className="journey-layout"><div className="journey-intro"><span className="date-stamp">DEC 2024 — NOW</span><p>Growing through the details that make production software work: business rules, system boundaries, and dependable delivery.</p><a href="/work/">SEE SYSTEMS BUILT <ArrowRight size={14} /></a></div>
       <div className="timeline">{milestones.map(([date, title, desc], index) => <motion.article className="timeline-entry" key={title} initial={{ opacity: 0, x: 14 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.06, duration: 0.45 }} viewport={{ once: true, amount: 0.35 }}><div className="timeline-node"><span>{String(index + 1).padStart(2, '0')}</span><i /></div><div className="timeline-date">{date}</div><div className="timeline-details"><h3>{title}</h3><p>{desc}</p></div><ArrowUpRight className="timeline-arrow" size={15} /></motion.article>)}</div>
     </div>
   </section>;
@@ -197,15 +222,44 @@ function ContactSection() {
     <div className="contact-layout"><div className="contact-info"><div className="connection-status"><span><i className="live-dot" /> STATUS: AVAILABLE FOR OPPORTUNITIES</span><Radio size={14} /></div><p>Have a role, a product challenge, or an idea you want to build? Send a signal.</p><div className="contact-links"><a href={`mailto:${profile.email}`}><span><Mail size={15} /> EMAIL</span><b>{profile.email}</b><ArrowUpRight size={14} /></a><a href={profile.linkedin} target="_blank" rel="noreferrer"><span><Linkedin size={15} /> LINKEDIN</span><b>Meet Shah</b><ArrowUpRight size={14} /></a><a href={profile.github} target="_blank" rel="noreferrer"><span><Github size={15} /> GITHUB</span><b>meet8406</b><ArrowUpRight size={14} /></a><a href={`tel:${profile.phone}`}><span><Radio size={15} /> PHONE</span><b>{profile.phone}</b><ArrowUpRight size={14} /></a></div></div>
       <form className="contact-form" onSubmit={submit}><div className="form-title"><span>NEW MESSAGE</span><span><i className="live-dot" /> ENCRYPTION: N/A</span></div><label>Your name<input name="name" type="text" autoComplete="name" placeholder="How should I address you?" required /></label><label>Your email<input name="email" type="email" autoComplete="email" placeholder="you@company.com" required /></label><label>Subject<input name="subject" type="text" placeholder="What are you building?" /></label><label>Message<textarea name="message" rows="3" placeholder="A little context goes a long way..." required /></label><button type="submit" className="button-primary">{sent ? 'OPENING EMAIL CLIENT' : 'SEND MESSAGE'} <Send size={15} /></button><p className="form-hint">YOUR EMAIL APP WILL OPEN WITH THIS MESSAGE.</p></form>
     </div>
-    <footer className="site-footer"><a href="#home" className="footer-brand">MS<span>↗</span></a><span>DESIGNED & BUILT BY MEET SHAH</span><a href="#home">BACK TO TOP <ArrowUpRight size={12} /></a><span>© {new Date().getFullYear()} / AHMEDABAD, IN</span></footer>
+    <footer className="site-footer"><a href="/" className="footer-brand">MS<span>↗</span></a><span>DESIGNED & BUILT BY MEET SHAH</span><a href="/">BACK TO HOME <ArrowUpRight size={12} /></a><span>© {new Date().getFullYear()} / AHMEDABAD, IN</span></footer>
   </section>;
 }
 
+function HomeOverview() {
+  const launchCards = [
+    { href: '/systems/', icon: <Layers3 size={17} />, code: '01 / SYSTEMS', title: 'How I engineer', copy: 'The profile, engineering journey, and toolchain behind the work.' },
+    { href: '/work/', icon: <Code2 size={17} />, code: '02 / PRODUCTS', title: 'What I have built', copy: 'Explore HR systems, activity tracking, and applied AI projects.' },
+    { href: '/lab/', icon: <Cpu size={17} />, code: '03 / PRACTICE', title: 'What I am learning', copy: 'Current experiments in AI / ML, algorithms, and system design.' },
+  ];
+  return <section className="section-frame content-section home-overview" id="home-overview">
+    <SectionHeading index="01" label="WORKSPACE INDEX" title={<>Choose a <span>signal.</span></>} note="A developer workspace organized around the systems, practice, and people behind each build." />
+    <div className="home-launch-grid">{launchCards.map((card, index) => <motion.a href={card.href} className="home-launch-card" key={card.code} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.08 }} viewport={{ once: true, amount: 0.3 }}><div className="home-launch-top"><span>{card.icon}{card.code}</span><ArrowUpRight size={15} /></div><h3>{card.title}</h3><p>{card.copy}</p><span className="launch-underline" /></motion.a>)}</div>
+    <div className="home-work-strip"><div><span>IN PRODUCTION CONTEXT</span><b>People systems / Activity platforms / AI applications</b></div><a href="/work/">OPEN PROJECT INDEX <ArrowRight size={14} /></a></div>
+  </section>;
+}
+
+function PageIntro({ index, label, title, note }) {
+  return <section className="section-frame page-intro"><SectionHeading index={index} label={label} title={title} note={note} /></section>;
+}
+
+function SystemsPage() {
+  return <><PageIntro index="01" label="SYSTEMS / ENGINEERING PROFILE" title={<>From product logic<br /><span>to production.</span></>} note="The foundations, decisions, and tools I bring to full-stack software." /><ProfileSection /><JourneySection /><StackSection /><CapabilitiesSection /><div className="section-frame route-cta"><span>THE SYSTEMS ARE BUILT FOR REAL WORK.</span><a href="/work/">EXPLORE THE PROJECTS <ArrowUpRight size={14} /></a></div></>;
+}
+
+function WorkPage() {
+  return <><PageIntro index="02" label="WORK / SELECTED SYSTEMS" title={<>Software with<br /><span>a job to do.</span></>} note="Production platforms and focused applications, explored through their architecture." /><ProjectsSection /><CodeSection /><div className="section-frame route-cta"><span>HAVE A SYSTEM IN MIND?</span><a href="/contact/">START A CONVERSATION <ArrowUpRight size={14} /></a></div></>;
+}
+
+function LabPage() {
+  return <><PageIntro index="03" label="LAB / ACTIVE PRACTICE" title={<>Keep the loop<br /><span>running.</span></>} note="Learning is part of the engineering process: curiosity, repetition, and experiments." /><LabSection /><section className="section-frame lab-next"><div className="lab-next-copy"><span>FROM STUDY TO SYSTEM</span><h2>Curiosity should<br />ship somewhere.</h2><p>My learning interests stay close to practical software: algorithms, backend architecture, AI workflows, and the systems people use every day.</p></div><div className="lab-next-stack"><span>ACTIVE THREADS</span>{learning.slice(0, 5).map((item, index) => <div key={item}><i>{String(index + 1).padStart(2, '0')}</i><b>{item}</b><ArrowUpRight size={13} /></div>)}</div></section><div className="section-frame route-cta"><span>EXPERIMENTS MEET PRODUCTION.</span><a href="/work/">SEE WHAT I BUILD <ArrowUpRight size={14} /></a></div></>;
+}
+
 export default function App() {
-  const active = useActiveSection();
+  const page = currentPage();
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
   const [ready, setReady] = useState(false);
   useEffect(() => { const timer = window.setTimeout(() => setReady(true), 1450); return () => window.clearTimeout(timer); }, []);
-  return <MotionConfig reducedMotion="user"><div className="portfolio-shell"><motion.div className="scroll-progress" style={{ scaleX }} /><Cursor /><SideNav active={active} /><a className="skip-link" href="#main-content">Skip to content</a><main id="main-content"><Hero ready={ready} /><SystemCore active={active} /><ProfileSection /><JourneySection /><ProjectsSection /><StackSection /><CapabilitiesSection /><LabSection /><CodeSection /><ContactSection /></main><div className="global-coordinate">MS / FULL-STACK ENGINEERING <span>—</span> 2026</div></div></MotionConfig>;
+  return <MotionConfig reducedMotion="user"><div className="portfolio-shell"><SignalField /><motion.div className="scroll-progress" style={{ scaleX }} /><Cursor /><SideNav active={page} /><a className="skip-link" href="#main-content">Skip to content</a><main id="main-content"><SystemCore active={page} /><AnimatePresence mode="wait"><motion.div className="route-page" key={page} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4, ease: [0.2, 0.7, 0.2, 1] }}>{page === 'home' ? <><Hero ready={ready} /><HomeOverview /></> : page === 'systems' ? <SystemsPage /> : page === 'work' ? <WorkPage /> : page === 'lab' ? <LabPage /> : <ContactSection />}</motion.div></AnimatePresence></main><div className="global-coordinate">MS / FULL-STACK ENGINEERING <span>—</span> 2026</div></div></MotionConfig>;
 }
