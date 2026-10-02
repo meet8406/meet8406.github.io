@@ -7,6 +7,7 @@ export const profile = {
   phone: '8238596629',
   linkedin: 'https://www.linkedin.com/in/meet-shah-9649b53a2/',
   github: 'https://github.com/meet8406',
+  resume: '/meet-shah-resume.pdf',
 };
 
 export const projects = [
@@ -17,6 +18,10 @@ export const projects = [
     stack: ['React', 'Django REST', 'PostgreSQL', 'Celery', 'Redis', 'AWS'],
     architecture: ['REACT APP', 'DJANGO REST API', 'POSTGRESQL', 'CELERY + REDIS', 'AWS INFRA'],
     detail: 'Geofenced attendance, salary structures and payslips, leave encashment, resignation workflows, and scheduled HR communication.',
+    overview: 'The platform covers geofenced attendance, payroll workflows, resignations, and scheduled HR communication.',
+    repository: null,
+    demo: null,
+    outcome: null,
   },
   {
     id: '02', key: 'tracker', name: 'TNM Tracker', type: 'EMPLOYEE ACTIVITY PLATFORM',
@@ -25,6 +30,10 @@ export const projects = [
     stack: ['React', 'FastAPI', 'PostgreSQL', 'Python', 'AWS S3', 'Docker'],
     architecture: ['PYTHON AGENT', 'FASTAPI', 'POSTGRESQL', 'AWS S3', 'REACT DASHBOARD'],
     detail: 'Agent heartbeats, activity signals, and screenshots flow into APIs and cloud object storage for review in an admin workspace.',
+    overview: 'A desktop agent sends activity signals and screenshots through a FastAPI service to cloud storage and an admin workspace.',
+    repository: null,
+    demo: null,
+    outcome: null,
   },
   {
     id: '03', key: 'resume', name: 'AI Resume Analyzer', type: 'AI-POWERED APPLICATION',
@@ -33,6 +42,10 @@ export const projects = [
     stack: ['React', 'Node.js', 'Django', 'Python', 'PostgreSQL', 'LLMs'],
     architecture: ['REACT UI', 'DJANGO + PYTHON', 'LLM ANALYSIS', 'POSTGRESQL'],
     detail: 'A practical exploration of AI and automation applied to a focused candidate experience.',
+    overview: 'An AI assisted resume feedback workflow with a React interface and Django/Python language model analysis.',
+    repository: null,
+    demo: null,
+    outcome: null,
   },
 ];
 

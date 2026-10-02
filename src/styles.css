@@ -69,3 +69,12 @@
 @media(max-width:940px){.home-launch-card{padding:14px 12px}.home-launch-card>h3{font-size:17px}.home-launch-top{font-size:7px}.page-intro{padding-top:115px}}
 @media(max-width:700px){.signal-field{opacity:.36;mask-image:linear-gradient(180deg,transparent 0%,#000 25%,#000 76%,transparent 100%)}.signal-field svg{width:145%;max-width:none;transform:translateX(-16%)}.field-stamp{top:69px;right:18px;font-size:6px}.home-overview{padding-top:78px;padding-bottom:72px}.home-launch-grid{grid-template-columns:1fr}.home-launch-card{min-height:135px;padding:13px 14px;border-right:0;border-bottom:1px solid #2a312b}.home-launch-card:last-child{border-bottom:0}.home-launch-card>h3{margin:17px 0 5px;font-size:18px}.home-launch-card>p{max-width:290px}.launch-underline{left:14px}.home-launch-card:hover .launch-underline{width:calc(100% - 28px)}.home-work-strip{align-items:flex-start;flex-direction:column;padding-top:16px}.home-work-strip>div>b{font-size:9px}.page-intro{padding-top:100px;padding-bottom:8px}.page-intro .section-heading{margin-bottom:13px}.route-cta{align-items:flex-start;flex-direction:column;padding-top:19px;padding-bottom:21px}.lab-next{grid-template-columns:1fr;gap:23px;padding-top:60px;padding-bottom:62px}.lab-next-copy h2{font-size:37px}.lab-next-stack{padding:13px}}
 @media(prefers-reduced-motion:reduce){.signal-flow,.signal-ring{animation:none!important}.signal-map{translate:0 0!important;transition:none!important}}
+.project-proof{display:grid;grid-template-columns:1fr;gap:15px;padding:14px 0;border-bottom:1px solid #2b322c}
+.project-proof>div>span{font:8px var(--mono);letter-spacing:.07em;color:#879480}
+.project-proof p{margin:7px 0 0;color:#b6c0b4;font-size:11px;line-height:1.65}
+.project-bottom .project-links{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:15px}
+.project-bottom .project-links>a{display:flex;align-items:center;gap:7px;color:#c6d4b7}
+.project-bottom .project-links svg{color:var(--lime)}
+.form-hint a{color:var(--lime);text-decoration:underline;text-underline-offset:3px}
+.project-detail:focus-visible{outline-offset:5px}
+@media(max-width:700px){.project-bottom .project-links{justify-content:flex-start}.project-proof p{font-size:9px}}
